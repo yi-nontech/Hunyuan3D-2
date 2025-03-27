@@ -5,6 +5,7 @@ import os
 import tempfile
 import torch
 import trimesh
+import time
 from io import BytesIO
 from PIL import Image
 
@@ -58,6 +59,7 @@ def handler(event):
     
     # Extract parameters from the job input
     params = {}
+    temp_file_path = None
     
     try:
         # Handle image input
@@ -113,15 +115,17 @@ def handler(event):
         # Export the mesh to a temporary file
         output_format = job_input.get('type', 'glb')
         print(f"Exporting mesh as {output_format}...")
-        with tempfile.NamedTemporaryFile(suffix=f'.{output_format}', delete=False) as temp_file:
-            mesh.export(temp_file.name)
-            
-            # Read the file and convert to base64
-            with open(temp_file.name, 'rb') as f:
-                mesh_data = base64.b64encode(f.read()).decode('utf-8')
-            
-            # Clean up the temporary file
-            os.remove(temp_file.name)
+        
+        # Create a unique filename for the temp file
+        temp_dir = tempfile.gettempdir()
+        temp_file_path = os.path.join(temp_dir, f"mesh_{os.getpid()}_{int(time.time())}.{output_format}")
+        
+        # Export to the temporary file
+        mesh.export(temp_file_path)
+        
+        # Read the file and convert to base64
+        with open(temp_file_path, 'rb') as f:
+            mesh_data = base64.b64encode(f.read()).decode('utf-8')
         
         # Return the results
         return {
@@ -137,6 +141,18 @@ def handler(event):
         error_details = traceback.format_exc()
         print(f"Error generating mesh: {str(e)}\n{error_details}")
         return {"error": str(e), "traceback": error_details}
+    
+    finally:
+        # Clean up temporary files in the finally block
+        if temp_file_path and os.path.exists(temp_file_path):
+            try:
+                # Give a small delay to ensure file handles are closed (Windows specific)
+                time.sleep(0.5)
+                os.remove(temp_file_path)
+                print(f"Temporary file {temp_file_path} deleted successfully")
+            except Exception as e:
+                print(f"Warning: Could not delete temporary file {temp_file_path}: {str(e)}")
+                # Non-critical error, proceed anyway
 
 # Start the RunPod serverless handler
 if __name__ == "__main__":
