@@ -1,1 +1,12 @@
- 
+{
+    "input": {
+        "image_path": "assets/demo.png",
+        "seed": 1234,
+        "octree_resolution": 128,
+        "num_inference_steps": 5,
+        "guidance_scale": 5.0,
+        "post_process": true,
+        "reduce_faces": false,
+        "type": "glb"
+    }
+} 

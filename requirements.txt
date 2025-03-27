@@ -5,7 +5,7 @@ diffusers
 einops
 opencv-python
 numpy
-torch
+torch>=2.0.0
 transformers
 torchvision
 #taming-transformers-rom1504
@@ -38,3 +38,6 @@ rembg
 onnxruntime
 #gevent
 #geventhttpclient
+
+hy3dgen
+pillow

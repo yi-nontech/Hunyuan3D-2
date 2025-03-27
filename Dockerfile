@@ -1,32 +1,31 @@
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:11.8.0-cudnn8-runtime-ubuntu22.04
 
 WORKDIR /app
 
-# Install Python and dependencies
-RUN apt-get update && apt-get install -y python3 python3-pip git && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
 
-# Copy requirements and install them
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip
+RUN pip3 install --no-cache-dir --upgrade pip
+
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-RUN pip3 install -r requirements.txt
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy the code
-COPY . .
+# Install runpod
+RUN pip3 install --no-cache-dir runpod
 
-# Install the package
-RUN pip3 install -e .
+# Copy application code
+COPY rp_handler.py .
+COPY test_input.json .
 
-# Install custom rasterizer and renderer
-RUN cd hy3dgen/texgen/custom_rasterizer && python3 setup.py install && cd ../../..
-RUN cd hy3dgen/texgen/differentiable_renderer && python3 setup.py install && cd ../../..
-
-# Create a directory for cache
-RUN mkdir -p /app/gradio_cache
-
-# RunPod handler file
-COPY handler.py .
-
-# Set the entrypoint
-ENTRYPOINT ["python3", "-u", "handler.py"] 
+# Start the handler
+CMD ["python3", "-u", "rp_handler.py"] 
