@@ -17,10 +17,21 @@ pipeline = None
 rembg = None
 device = "cuda"
 
+print("Starting handler initialization...")
+
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"CUDA device count: {torch.cuda.device_count()}")
+if torch.cuda.is_available():
+    print(f"CUDA device name: {torch.cuda.get_device_name(0)}")
+
+# At the top of your handler
+os.environ['HY3DGEN_MODELS'] = '/app/models'
+
 def load_models():
     global pipeline, rembg
     
     print("Loading models...")
+    print(f"Will download models to: {os.path.expanduser('~/.cache/huggingface')}")
     # Load background remover
     rembg = BackgroundRemover()
     
@@ -34,6 +45,7 @@ def load_models():
     pipeline.enable_flashvdm(mc_algo='mc', topk_mode='merge')
     
     print("Models loaded successfully!")
+    print(f"Models loaded. Pipeline type: {type(pipeline)}")
 
 def load_image_from_base64(image_data):
     try:
@@ -56,6 +68,9 @@ def handler(event):
     
     # Get input from the event
     job_input = event["input"]
+    
+    print(f"Received job input: {job_input.keys()}")
+    print(f"Received image_path: {job_input["image_path"]}")
     
     # Extract parameters from the job input
     params = {}
