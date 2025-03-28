@@ -41,9 +41,15 @@ RUN pip3 install --no-cache-dir -r requirements.txt
 # Install runpod
 RUN pip3 install --no-cache-dir runpod
 
-# Pre-download models (do this before copying application code)# Add download script
+# Pre-download models (do this before copying application code)
 COPY download_models.py .
-RUN python3 download_models.py
+RUN pip3 install --no-cache-dir huggingface_hub && \
+    python3 download_models.py && \
+    # Create .u2net directory in the image
+    mkdir -p /root/.u2net
+
+# Verify model paths are correct
+RUN find /app/models -type f | grep safetensors
 
 # Copy application code
 COPY rp_handler.py .

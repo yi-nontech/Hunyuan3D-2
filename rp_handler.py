@@ -24,25 +24,33 @@ print(f"CUDA device count: {torch.cuda.device_count()}")
 if torch.cuda.is_available():
     print(f"CUDA device name: {torch.cuda.get_device_name(0)}")
 
-# At the top of your handler
+# At initialization
+# Explicitly set paths to pre-downloaded models
 os.environ['HY3DGEN_MODELS'] = '/app/models'
+os.environ['U2NET_HOME'] = '/root/.u2net'
 
 def load_models():
     global pipeline, rembg
     
-    print("Loading models...")
-    print(f"Will download models to: {os.path.expanduser('~/.cache/huggingface')}")
-    # Load background remover
+    print("Loading models from pre-downloaded files...")
+    # Load background remover with explicit path
     rembg = BackgroundRemover()
     
-    # Load shape generation model
+    # Initialize pipeline with local models
     pipeline = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained(
         'tencent/Hunyuan3D-2mini',
         subfolder='hunyuan3d-dit-v2-mini-turbo',
         use_safetensors=True,
         device=device,
+        local_files_only=True  # Force local files only
     )
     pipeline.enable_flashvdm(mc_algo='mc', topk_mode='merge')
+    
+    # Pre-compile common CUDA operations
+    print("Pre-warming CUDA operations...")
+    dummy_input = torch.randn(1, 3, 256, 256, device=device)
+    _ = dummy_input + dummy_input  # Force CUDA initialization
+    torch.cuda.synchronize()
     
     print("Models loaded successfully!")
     print(f"Models loaded. Pipeline type: {type(pipeline)}")
