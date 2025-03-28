@@ -70,7 +70,6 @@ def handler(event):
     job_input = event["input"]
     
     print(f"Received job input: {job_input.keys()}")
-    print(f"Received image_path: {job_input["image_path"]}")
     
     # Extract parameters from the job input
     params = {}
@@ -80,26 +79,27 @@ def handler(event):
         # Handle image input
         if 'image' in job_input:
             if job_input["image"].startswith("data:image"):
+                print(f"Handling data URI image")
                 # Handle data URI format
                 image_data = job_input["image"].split(",")[1]
                 image = load_image_from_base64(image_data)
             else:
+                print(f"Handling base64 image")
                 # Regular base64
                 image = load_image_from_base64(job_input["image"])
             
-            # Convert to RGBA if needed
-            image = image.convert("RGBA")
-            
-            # Remove background if image is RGB
-            if image.mode == 'RGB':
-                image = rembg(image)
-                
+            # Simply apply background removal without checking mode
+            print(f"Applying background removal to image")
+            image = rembg(image)
             params['image'] = image
         elif 'image_path' in job_input and os.path.exists(job_input['image_path']):
+            print(f"Loading image from path: {job_input['image_path']}")
             # For local testing, support direct file path
-            image = Image.open(job_input['image_path']).convert("RGBA")
-            if image.mode == 'RGB':
-                image = rembg(image)
+            image = Image.open(job_input['image_path'])
+            
+            # Simply apply background removal without checking mode or conversion
+            print(f"Applying background removal to image from path")
+            image = rembg(image)
             params['image'] = image
         else:
             return {"error": "No valid input image provided"}
