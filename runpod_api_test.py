@@ -4,14 +4,14 @@ import time
 import base64
 from datetime import datetime
 import os 
+
 # Your RunPod API key and endpoint ID
 # API_KEY = "rpa_PM2YUPP7X0TPKGFSCT8ZHGDTKTVXJIA31FO092L8vzo7db" // Read
 API_KEY = "rpa_R4J3MFU9A6OBEU9A7C22J7I1ZHYROWQ5R4PYBBMFbmbe18"
 ENDPOINT_ID = "gu4fk0x5f7m0iv"
 
-
 # Path to your test image
-IMAGE_PATH = "assets/demo.png"
+IMAGE_PATH = "assets/demo3.jpeg"
 
 # Read and encode the image
 with open(IMAGE_PATH, "rb") as image_file:
@@ -21,10 +21,12 @@ with open(IMAGE_PATH, "rb") as image_file:
 test_payload = {
     "input": {
         "image": encoded_image
+        # "image_path":"https://media.sketchfab.com/models/644b113218b94c94b5f07be0b6f455a3/thumbnails/c21a2bf1dfee4819a7ababa451f10447/c74f778e43d546778162aa139d763689.jpeg"
     }
 }
 
-
+# Start timer
+start_time = time.time()
 
 # Send the request
 print("Sending test request...")
@@ -67,7 +69,7 @@ if response.status_code == 200:
                     mesh_data = base64.b64decode(output["model_base64"])
                     
                     # Save to file
-                    output_file = "export/runpod_api_test_"+datetime.now().strftime("%Y%m%d_%H%M%S")+".glb"
+                    output_file = "export/runpod_api_test_" + datetime.now().strftime("%Y%m%d_%H%M%S") + ".glb"
                     with open(output_file, "wb") as f:
                         f.write(mesh_data)
                     
@@ -77,11 +79,20 @@ if response.status_code == 200:
                     print(f"Error saving mesh: {str(e)}")
             else:
                 print("No mesh data found in result")
-                
+            
+            elapsed_time = time.time() - start_time
+            print(f"Total time elapsed: {elapsed_time:.2f} seconds")
             break
+        
         elif status.get("status") == "FAILED":
             print("Job failed!")
             print(f"Error: {status.get('error')}")
+            elapsed_time = time.time() - start_time
+            print(f"Total time elapsed: {elapsed_time:.2f} seconds")
             break
             
         time.sleep(5)  # Check every 5 seconds
+else:
+    print("Failed to send the initial request.")
+    elapsed_time = time.time() - start_time
+    print(f"Total time elapsed: {elapsed_time:.2f} seconds")
