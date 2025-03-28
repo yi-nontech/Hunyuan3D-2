@@ -2,9 +2,12 @@ import requests
 import json
 import time
 import base64
+from datetime import datetime
+import os 
 # Your RunPod API key and endpoint ID
-API_KEY = "YOUR_RUNPOD_API_KEY"
-ENDPOINT_ID = "YOUR_ENDPOINT_ID"
+# API_KEY = "rpa_PM2YUPP7X0TPKGFSCT8ZHGDTKTVXJIA31FO092L8vzo7db" // Read
+API_KEY = "rpa_R4J3MFU9A6OBEU9A7C22J7I1ZHYROWQ5R4PYBBMFbmbe18"
+ENDPOINT_ID = "gu4fk0x5f7m0iv"
 
 
 # Path to your test image
@@ -35,7 +38,7 @@ response = requests.post(
 )
 
 print(f"Response status: {response.status_code}")
-print(f"Response content: {response.json()}")
+# print(f"Response content: {response.json()}")
 
 # If successful, get job ID and poll for result
 if response.status_code == 200:
@@ -54,7 +57,27 @@ if response.status_code == 200:
         
         if status.get("status") == "COMPLETED":
             print("Job completed!")
-            print(f"Result: {status.get('output')}")
+            output = status.get('output')
+            print(f"Result: {output.get('vertices')}")
+            
+            # Save the result mesh to a GLB file
+            if isinstance(output, dict) and "model_base64" in output:
+                try:
+                    # Decode the base64 string
+                    mesh_data = base64.b64decode(output["model_base64"])
+                    
+                    # Save to file
+                    output_file = "export/runpod_api_test_"+datetime.now().strftime("%Y%m%d_%H%M%S")+".glb"
+                    with open(output_file, "wb") as f:
+                        f.write(mesh_data)
+                    
+                    print(f"Mesh saved to: {os.path.abspath(output_file)}")
+                    print(f"Mesh info: {output.get('vertices', 'N/A')} vertices, {output.get('faces', 'N/A')} faces")
+                except Exception as e:
+                    print(f"Error saving mesh: {str(e)}")
+            else:
+                print("No mesh data found in result")
+                
             break
         elif status.get("status") == "FAILED":
             print("Job failed!")
