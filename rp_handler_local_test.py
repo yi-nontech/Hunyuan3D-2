@@ -3,28 +3,44 @@ import json
 import sys
 import base64  # Add base64 import
 from datetime import datetime
+import time
 print("Python version:", sys.version)
 print("Current directory:", os.getcwd())
 print("Files in directory:", os.listdir("."))
 
 # Check if test_input.json exists
-if os.path.exists("test_input.json"):
-    print("test_input.json found")
-    with open("test_input.json", "r") as f:
-        test_input = json.load(f)
-        print("Loaded test input:", test_input.keys())
-else:
-    print("test_input.json NOT found")
-    test_input = {
-        "input": {
-            "image_path": "https://media.sketchfab.com/models/644b113218b94c94b5f07be0b6f455a3/thumbnails/c21a2bf1dfee4819a7ababa451f10447/c74f778e43d546778162aa139d763689.jpeg",
-            "seed": 1234,
-            "octree_resolution": 64,  # Lower for quicker testing
-            "num_inference_steps": 3,  # Lower for quicker testing
-        }
-    }
+# if os.path.exists("test_input.json"):
+#     print("test_input.json found")
+#     with open("test_input.json", "r") as f:
+#         test_input = json.load(f)
+#         print("Loaded test input:", test_input.keys())
+# else:
+#     print("test_input.json NOT found")
+#     test_input = {
+#         "input": {
+#             "image_path": "https://media.sketchfab.com/models/644b113218b94c94b5f07be0b6f455a3/thumbnails/c21a2bf1dfee4819a7ababa451f10447/c74f778e43d546778162aa139d763689.jpeg",
+#             "seed": 1234,
+#             "octree_resolution": 64,  # Lower for quicker testing
+#             "num_inference_steps": 3,  # Lower for quicker testing
+#         }
+#     }
 
+test_input = {
+    "input": {
+        "image_path": "assets/cat.webp",
+        "seed": 1234,
+        "octree_resolution": 256,  # Lower for quicker testing
+        "num_inference_steps": 30,  # Lower for quicker testing
+        "guidance_scale": 7.5,
+        "num_chunks": 20000,
+        "output_type": "mesh"
+    }
+}
+    
 print("\n--- Starting direct handler test ---\n")
+
+# Start timer
+start_time = time.time()
 
 # Import handler directly
 try:
@@ -62,6 +78,9 @@ try:
     else:
         print("No mesh data found in result")
     
+    elapsed_time = time.time() - start_time
+    print(f"Total time elapsed: {elapsed_time:.2f} seconds")
+
 except Exception as e:
     import traceback
     print(f"Error during test: {str(e)}")

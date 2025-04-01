@@ -115,9 +115,9 @@ def handler(event):
         # Process optional parameters
         seed = job_input.get("seed", 1234)
         params['generator'] = torch.manual_seed(seed)
-        params['octree_resolution'] = job_input.get("octree_resolution", 128)
-        params['num_inference_steps'] = job_input.get("num_inference_steps", 5)
-        params['guidance_scale'] = job_input.get('guidance_scale', 5.0)
+        params['octree_resolution'] = job_input.get("octree_resolution", 256)
+        params['num_inference_steps'] = job_input.get("num_inference_steps", 30)
+        params['guidance_scale'] = job_input.get('guidance_scale', 7.5)
         params['num_chunks'] = job_input.get('num_chunks', 20000)
         params['output_type'] = 'trimesh'
         
